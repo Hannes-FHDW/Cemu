@@ -337,7 +337,7 @@ namespace coreinit
 			monthLoopIter++;
 			determinedMonth0idx--;
 			if (determinedMonth0idx < 0) { // Safety break
-				cemuLog_log(LogType::Error, "FsDayNumberToCalendarDate: Month determination loop error! determinedMonth0idx < 0. dayOfYear0idx = {}", dayOfYear0idx);
+				cemuLog_log(LogType::Force, "FsDayNumberToCalendarDate: Month determination loop error! determinedMonth0idx < 0. dayOfYear0idx = {}", dayOfYear0idx);
 				determinedMonth0idx = 0; // Default to Jan
 				break;
 			}
