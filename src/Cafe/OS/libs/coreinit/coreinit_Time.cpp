@@ -349,18 +349,18 @@ namespace coreinit
 		cemuLog_log(LogType::Debug, "FsDayNumberToCalendarDate: cal->month = {}, cal->dayOfMonth = {}", cal->month, cal->dayOfMonth);
 	}
 
-	void OSFSTimeToCalendarTime(uint64 fsTime, OSCalendarTime_t* outCalendarTime)
+	void FSTimeToCalendarTime(uint64 fsTime, OSCalendarTime_t* outCalendarTime)
 	{
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: Called with fsTime = {}", fsTime);
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: Called with fsTime = {}", fsTime);
 
 		if (!outCalendarTime)
 		{
-			cemuLog_log(LogType::Warn, "OSFSTimeToCalendarTime: outCalendarTime is null!");
+			cemuLog_log(LogType::Warn, "FSTimeToCalendarTime: outCalendarTime is null!");
 			return;
 		}
 
 		uint64 totalMicroseconds = fsTime;
-		// cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: totalMicroseconds = {}", totalMicroseconds); // Same as fsTime
+		// cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: totalMicroseconds = {}", totalMicroseconds); // Same as fsTime
 
 		const uint64 MICROSECONDS_PER_MILLISECOND = 1000ULL;
 		const uint64 MICROSECONDS_PER_SECOND = 1000000ULL;
@@ -368,14 +368,14 @@ namespace coreinit
 		const sint64 FS_DAY_EPOCH_OFFSET_FROM_0000_01_01 = 723180LL;
 
 		uint64 remainderMicrosecondsInSecond = totalMicroseconds % MICROSECONDS_PER_SECOND;
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: remainderMicrosecondsInSecond = {}", remainderMicrosecondsInSecond);
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: remainderMicrosecondsInSecond = {}", remainderMicrosecondsInSecond);
 
 		outCalendarTime->millisecond = static_cast<sint32>(remainderMicrosecondsInSecond / MICROSECONDS_PER_MILLISECOND);
 		outCalendarTime->microsecond = static_cast<sint32>(remainderMicrosecondsInSecond % MICROSECONDS_PER_MILLISECOND);
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: outCalendarTime->millisecond = {}, outCalendarTime->microsecond = {}", outCalendarTime->millisecond, outCalendarTime->microsecond);
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: outCalendarTime->millisecond = {}, outCalendarTime->microsecond = {}", outCalendarTime->millisecond, outCalendarTime->microsecond);
 
 		sint64 totalSecondsSinceFsEpoch = static_cast<sint64>(totalMicroseconds / MICROSECONDS_PER_SECOND);
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: totalSecondsSinceFsEpoch = {}", totalSecondsSinceFsEpoch);
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: totalSecondsSinceFsEpoch = {}", totalSecondsSinceFsEpoch);
 
 		sint64 totalDaysRawSinceFsEpoch;
 		sint64 secondsInDay;
@@ -384,31 +384,31 @@ namespace coreinit
 		{
 			totalDaysRawSinceFsEpoch = totalSecondsSinceFsEpoch / SECONDS_PER_DAY;
 			secondsInDay = totalSecondsSinceFsEpoch % SECONDS_PER_DAY;
-			cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: (Positive totalSeconds) totalDaysRawSinceFsEpoch = {}, secondsInDay = {}", totalDaysRawSinceFsEpoch, secondsInDay);
+			cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: (Positive totalSeconds) totalDaysRawSinceFsEpoch = {}, secondsInDay = {}", totalDaysRawSinceFsEpoch, secondsInDay);
 		}
 		else
 		{
 			totalDaysRawSinceFsEpoch = totalSecondsSinceFsEpoch / SECONDS_PER_DAY;
 			secondsInDay = totalSecondsSinceFsEpoch % SECONDS_PER_DAY;
-			cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: (Negative totalSeconds path) initial totalDaysRawSinceFsEpoch = {}, initial secondsInDay = {}", totalDaysRawSinceFsEpoch, secondsInDay);
+			cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: (Negative totalSeconds path) initial totalDaysRawSinceFsEpoch = {}, initial secondsInDay = {}", totalDaysRawSinceFsEpoch, secondsInDay);
 			if (secondsInDay < 0)
 			{
 				secondsInDay += SECONDS_PER_DAY;
 				totalDaysRawSinceFsEpoch--;
-				cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: (Adjusted for negative remainder) totalDaysRawSinceFsEpoch = {}, secondsInDay = {}", totalDaysRawSinceFsEpoch, secondsInDay);
+				cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: (Adjusted for negative remainder) totalDaysRawSinceFsEpoch = {}, secondsInDay = {}", totalDaysRawSinceFsEpoch, secondsInDay);
 			}
 		}
 
 		sint64 dayNumberSince00000101 = totalDaysRawSinceFsEpoch + FS_DAY_EPOCH_OFFSET_FROM_0000_01_01;
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: dayNumberSince00000101 = {} (Input to FsDayNumberToCalendarDate)", dayNumberSince00000101);
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: dayNumberSince00000101 = {} (Input to FsDayNumberToCalendarDate)", dayNumberSince00000101);
 
 		FsDayNumberToCalendarDate(dayNumberSince00000101, outCalendarTime);
 
 		outCalendarTime->second  = static_cast<sint32>(secondsInDay % 60);
 		outCalendarTime->minute  = static_cast<sint32>((secondsInDay / 60) % 60);
 		outCalendarTime->hour = static_cast<sint32>((secondsInDay / 60) / 60);
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: Final H:M:S = {}:{}:{}", outCalendarTime->hour, outCalendarTime->minute, outCalendarTime->second);
-		cemuLog_log(LogType::Debug, "OSFSTimeToCalendarTime: Final Y/M/D = {}/{}/{} DoW:{} DoY:{}", outCalendarTime->year, outCalendarTime->month +1, outCalendarTime->dayOfMonth, outCalendarTime->dayOfWeek, outCalendarTime->dayOfYear); // Log month as 1-12 for readability
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: Final H:M:S = {}:{}:{}", outCalendarTime->hour, outCalendarTime->minute, outCalendarTime->second);
+		cemuLog_log(LogType::Debug, "FSTimeToCalendarTime: Final Y/M/D = {}/{}/{} DoW:{} DoY:{}", outCalendarTime->year, outCalendarTime->month +1, outCalendarTime->dayOfMonth, outCalendarTime->dayOfWeek, outCalendarTime->dayOfYear); // Log month as 1-12 for readability
 	}
 
 	void verifyDateMatch(OSCalendarTime_t* ct1, OSCalendarTime_t* ct2)
