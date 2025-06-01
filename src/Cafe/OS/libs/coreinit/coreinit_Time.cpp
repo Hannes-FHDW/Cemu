@@ -314,7 +314,7 @@ namespace coreinit
 	}
 
 
-	void OSFSTimeToCalendarTime(uint64 fsTime_microseconds, OSCalendarTime_t *outCalendarTime) {
+	void FSTimeToCalendarTime(uint64 fsTime_microseconds, OSCalendarTime_t *outCalendarTime) {
 		if (!outCalendarTime) {
 			return;
 		}
@@ -440,7 +440,7 @@ namespace coreinit
 
 		cafeExportRegister("coreinit", OSTicksToCalendarTime, LogType::Placeholder);
 		cafeExportRegister("coreinit", OSCalendarTimeToTicks, LogType::Placeholder);
-		cafeExportRegister("coreinit", OSFSTimeToCalendarTime, LogType::Placeholder);
+		cafeExportRegister("coreinit", FSTimeToCalendarTime, LogType::Placeholder);
 
 		//timeTest();
 	}
