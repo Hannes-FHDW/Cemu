@@ -355,7 +355,7 @@ namespace coreinit
 
 		if (!outCalendarTime)
 		{
-			cemuLog_log(LogType::Warn, "FSTimeToCalendarTime: outCalendarTime is null!");
+			cemuLog_log(LogType::Force, "FSTimeToCalendarTime: outCalendarTime is null!");
 			return;
 		}
 
