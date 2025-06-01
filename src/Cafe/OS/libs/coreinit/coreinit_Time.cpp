@@ -278,6 +278,7 @@ namespace coreinit
 		return 31;
 	}
 	void FSDayNumberToCalendarTime(long long DayNumber_epoch0, OSCalendarTime_t *cal) {
+		// test
 		cal->dayOfWeek = (DayNumber_epoch0 + 6) % 7;
 
 		int year_0idx = DayNumber_epoch0 / 365;
