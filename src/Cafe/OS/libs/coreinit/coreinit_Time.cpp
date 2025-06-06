@@ -278,55 +278,47 @@ namespace coreinit
 		return 31;
 	}
 
-	void FsDayNumberToCalendarDate(sint64 dayNumberEpoch0, OSCalendarTime_t* cal)
+	void FsDayNumberToCalendarDate(sint64 absoluteDayNumber, OSCalendarTime_t* cal)
 	{
-		cal->dayOfWeek = (dayNumberEpoch0 + 6) % 7;
+		cal->dayOfWeek = (absoluteDayNumber + 6) % 7;
 
-		sint32 year = static_cast<sint32>(dayNumberEpoch0 / 365);
+		sint32 year = static_cast<sint32>(absoluteDayNumber / 365);
 
 		sint64 numLeapsBeforeYear = getLeapDaysUntilYear(year);
-		sint64 startDayOfYear0idx = numLeapsBeforeYear + (sint64)year * 365;
+		sint64 startDayOfYear = numLeapsBeforeYear + (sint64)year * 365;
 
 		uint32 loopIterations = 0;
-		while (dayNumberEpoch0 < startDayOfYear0idx)
+		while (absoluteDayNumber < startDayOfYear)
 		{
-			loopIterations++;
 			year--;
 			numLeapsBeforeYear = getLeapDaysUntilYear(year);
-			startDayOfYear0idx = numLeapsBeforeYear + (sint64)year * 365;
+			startDayOfYear = numLeapsBeforeYear + (sint64)year * 365;
 		}
 
 		cal->year = year;
 
-		sint32 dayOfYear0idx = static_cast<sint32>(dayNumberEpoch0 - startDayOfYear0idx);
-		cal->dayOfYear = dayOfYear0idx;
+		sint32 dayOfYear = static_cast<sint32>(absoluteDayNumber - startDayOfYear);
+		cal->dayOfYear = dayOfYear;
 
-		const uint32* monthCumulativeDaysTable;
-		bool isCurrentYearLeap = IsLeapYear(year);
-		if (isCurrentYearLeap)
-		{
-			monthCumulativeDaysTable = dayToMonthLeapYear;
-		}
-		else
-		{
-			monthCumulativeDaysTable = dayToMonth;
-		}
+		const uint32* monthCumulativeDaysTable = IsLeapYear(year) ? dayToMonthLeapYear : dayToMonth;
 
-		sint32 determinedMonth = 12;
-		uint32 monthLoopIter = 0;
-		do
+		// Default to December. This will be the final value if the day is not in any earlier month.
+		sint32 determinedMonth = 11;
+
+		// Loop through the start days of Feb (i=1) through Dec (i=11).
+		for (sint32 i = 1; i < 12; ++i)
 		{
-			monthLoopIter++;
-			determinedMonth--;
-			if (determinedMonth < 0) // Safety break
-			{
-				determinedMonth = 0; // Default to Jan
+    		// If the day-of-year is less than the cumulative days at the start of month 'i',
+    		// then the date must belong to the previous month, 'i-1'.
+    		if (dayOfYear < monthCumulativeDaysTable[i])
+    		{
+				determinedMonth = i - 1;
 				break;
 			}
-		} while (dayOfYear0idx < monthCumulativeDaysTable[determinedMonth]);
+		}
 
 		cal->month = determinedMonth;
-		cal->dayOfMonth = (dayOfYear0idx - monthCumulativeDaysTable[determinedMonth]) + 1;
+		cal->dayOfMonth = (dayOfYear - monthCumulativeDaysTable[determinedMonth]) + 1;
 	}
 
 	void FSTimeToCalendarTime(uint64 fsTime, OSCalendarTime_t* outCalendarTime)
@@ -371,13 +363,13 @@ namespace coreinit
 			}
 		}
 
-		sint64 dayNumberSince00000101 = totalDaysRawSinceFsEpoch + FS_DAY_EPOCH_OFFSET_FROM_0000_01_01;
+		sint64 absoluteDayNumber = totalDaysRawSinceFsEpoch + FS_DAY_EPOCH_OFFSET_FROM_0000_01_01;
 
-		FsDayNumberToCalendarDate(dayNumberSince00000101, outCalendarTime);
+		FsDayNumberToCalendarDate(absoluteDayNumber, outCalendarTime);
 
 		outCalendarTime->second  = static_cast<sint32>(secondsInDay % 60);
 		outCalendarTime->minute  = static_cast<sint32>((secondsInDay / 60) % 60);
-		outCalendarTime->hour = static_cast<sint32>((secondsInDay / 60) / 60);
+		outCalendarTime->hour = static_cast<sint32>((secondsInDay / 3600));
 	}
 
 	void verifyDateMatch(OSCalendarTime_t* ct1, OSCalendarTime_t* ct2)
