@@ -48,12 +48,12 @@ namespace coreinit
 	}
 
 	uint32 dayToMonth[12] =
-	{
+		{
 		0,31,59,90,120,151,181,212,243,273,304,334
 	};
 
 	uint32 dayToMonthLeapYear[12] =
-	{
+		{
 		0,31,60,91,121,152,182,213,244,274,305,335
 	};
 
@@ -61,17 +61,16 @@ namespace coreinit
 	{
 		// Project Zero Maiden of Black Water (JPN) gives us an invalid calendar object
 		month %= 12; // or return 0 if too big?
-		
+
 		if (IsLeapYear(year))
 			return dayToMonthLeapYear[month];
-		
+
 		return dayToMonth[month];
 	}
 
-
 	inline const uint64 DAY_BIAS_2000 = 0xB2575;
 
-	uint64 OSCalendarTimeToTicks(OSCalendarTime_t *calendar)
+	uint64 OSCalendarTimeToTicks(OSCalendarTime_t* calendar)
 	{
 		uint32 year = calendar->year;
 
@@ -79,7 +78,7 @@ namespace coreinit
 		uint32 startDayOfCurrentMonth = getDayInYearByYearAndMonth(year, calendar->month);
 
 		uint64 dayInYear = (startDayOfCurrentMonth + calendar->dayOfMonth) - 1;
-		
+
 		uint64 dayCount = dayInYear + year * 365 + leapDays - DAY_BIAS_2000;
 
 		// convert date to seconds
@@ -109,7 +108,7 @@ namespace coreinit
 		millisecond %= 1000ull;
 		calenderStruct->millisecond = (uint32)millisecond;
 
-		uint64 dayOfWeek = (tSeconds/(24ull * 60 * 60) + 6ull) % 7ull;
+		uint64 dayOfWeek = (tSeconds / (24ull * 60 * 60) + 6ull) % 7ull;
 		uint64 secondOfDay = (tSeconds % (24ull * 60 * 60));
 
 		calenderStruct->dayOfWeek = (sint32)dayOfWeek;
@@ -144,7 +143,7 @@ namespace coreinit
 		uint32 month = 0; // 0-11
 		uint32 dayInMonth = 0;
 
-		if (isLeapYear && dayInYear < (31+29))
+		if (isLeapYear && dayInYear < (31 + 29))
 		{
 			if (dayInYear < 31)
 			{
@@ -156,7 +155,7 @@ namespace coreinit
 			{
 				// February
 				month = 1;
-				dayInMonth = dayInYear-31;
+				dayInMonth = dayInYear - 31;
 			}
 		}
 		else
@@ -287,7 +286,6 @@ namespace coreinit
 		sint64 numLeapsBeforeYear = getLeapDaysUntilYear(year);
 		sint64 startDayOfYear = numLeapsBeforeYear + (sint64)year * 365;
 
-		uint32 loopIterations = 0;
 		while (absoluteDayNumber < startDayOfYear)
 		{
 			year--;
@@ -302,16 +300,12 @@ namespace coreinit
 
 		const uint32* monthCumulativeDaysTable = IsLeapYear(year) ? dayToMonthLeapYear : dayToMonth;
 
-		// Default to December. This will be the final value if the day is not in any earlier month.
 		sint32 determinedMonth = 11;
 
-		// Loop through the start days of Feb (i=1) through Dec (i=11).
 		for (sint32 i = 1; i < 12; ++i)
 		{
-    		// If the day-of-year is less than the cumulative days at the start of month 'i',
-    		// then the date must belong to the previous month, 'i-1'.
-    		if (dayOfYear < monthCumulativeDaysTable[i])
-    		{
+			if (dayOfYear < monthCumulativeDaysTable[i])
+			{
 				determinedMonth = i - 1;
 				break;
 			}
@@ -335,7 +329,7 @@ namespace coreinit
 		const sint64 SECONDS_PER_DAY = 86400LL;
 		// The FS epoch begins on 1980-01-01.
 		// This is the number of days from 0000-01-01 to 1980-01-01.
-		const sint64 FS_DAY_EPOCH_OFFSET_FROM_0000_01_01 = 723180LL;
+		const sint64 FS_DAY_EPOCH_OFFSET = 723180LL;
 
 		uint64 remainderMicrosecondsInSecond = totalMicroseconds % MICROSECONDS_PER_SECOND;
 
@@ -363,12 +357,12 @@ namespace coreinit
 			}
 		}
 
-		sint64 absoluteDayNumber = totalDaysRawSinceFsEpoch + FS_DAY_EPOCH_OFFSET_FROM_0000_01_01;
+		sint64 absoluteDayNumber = totalDaysRawSinceFsEpoch + FS_DAY_EPOCH_OFFSET;
 
 		FsDayNumberToCalendarDate(absoluteDayNumber, outCalendarTime);
 
-		outCalendarTime->second  = static_cast<sint32>(secondsInDay % 60);
-		outCalendarTime->minute  = static_cast<sint32>((secondsInDay / 60) % 60);
+		outCalendarTime->second = static_cast<sint32>(secondsInDay % 60);
+		outCalendarTime->minute = static_cast<sint32>((secondsInDay / 60) % 60);
 		outCalendarTime->hour = static_cast<sint32>((secondsInDay / 3600));
 	}
 
@@ -409,7 +403,6 @@ namespace coreinit
 		{
 			iterCount++;
 
-
 			uint64 ticks = OSCalendarTimeToTicks(&ct);
 
 			// make sure converting it back results in the same date
@@ -428,7 +421,7 @@ namespace coreinit
 			// add a day manually
 			sint32 daysInMonth = getDaysInMonth(ctExpected.year, ctExpected.month);
 			ctExpected.dayOfMonth = ctExpected.dayOfMonth + 1;
-			if (ctExpected.dayOfMonth >= daysInMonth+1)
+			if (ctExpected.dayOfMonth >= daysInMonth + 1)
 			{
 				ctExpected.dayOfMonth = 1;
 				ctExpected.month = ctExpected.month + 1;
