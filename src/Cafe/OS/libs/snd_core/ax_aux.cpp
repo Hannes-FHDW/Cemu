@@ -285,11 +285,6 @@ namespace snd_core
 			return -5;
 		if( device == AX_DEV_TV )
 		{
-			if (originalVolume != volume)
-			{
-				cemuLog_logDebug(LogType::Force, "Clamped AUX return volume on bus %u from 0x%04X to 0x%04X", auxBus, originalVolume, volume);
-			}
-
 			__AXTVAuxReturnVolume[auxBus] = volume;
 		}
 		else
