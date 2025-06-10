@@ -278,17 +278,6 @@ namespace snd_core
 
 	sint32 AXSetAuxReturnVolume(uint32 device, uint32 deviceIndex, uint32 auxBus, uint16 volume)
 	{
-		const uint16 VOLUME_THRESHOLD = 0x7FFF;
-
-		// Store the original volume for logging purposes.
-		uint16 originalVolume = volume;
-
-		// The core of the fix: check if the volume exceeds our threshold.
-		if (volume > VOLUME_THRESHOLD)
-		{
-			// If it does, clamp it down to the threshold value.
-			volume = VOLUME_THRESHOLD;
-		}
 		sint32 r = AXIsValidDevice(device, deviceIndex);
 		if (r)
 			return r;
