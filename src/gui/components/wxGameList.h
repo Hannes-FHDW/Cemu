@@ -68,7 +68,7 @@ private:
 	inline static const wxColour kSecondColor{ 0xFDF9F2 };
 	void UpdateItemColors(sint32 startIndex = 0);
 
-	enum ItemColumns
+	enum ItemColumns : int
 	{
 		ColumnHiddenName = 0,
 		ColumnIcon,
@@ -83,18 +83,16 @@ private:
 		ColumnCounts,
 	};
 
-	int s_last_column = ColumnName;
-	int s_direction = 1;
 	void SortEntries(int column = -1);
 	struct SortData
 	{
 		wxGameList* thisptr;
-		int column;
+		ItemColumns column;
 		int dir;
 	};
 
 	int FindInsertPosition(TitleId titleId);
-	int SortComparator(uint64 titleId1, uint64 titleId2, SortData* sortData);
+	std::weak_ordering SortComparator(uint64 titleId1, uint64 titleId2, SortData* sortData);
 	static int SortFunction(wxIntPtr item1, wxIntPtr item2, wxIntPtr sortData);
 
 	wxTimer* m_tooltip_timer;
