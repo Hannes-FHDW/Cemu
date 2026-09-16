@@ -316,7 +316,7 @@ namespace coreinit
 		cal->dayOfMonth = (dayOfYear - monthCumulativeDaysTable[determinedMonth]) + 1;
 	}
 
-	void FSTimeToCalendarTime(uint64 fsTime, OSCalendarTime_t* outCalendarTime)
+	void FSTimeToCalendarTime(sint64 fsTime, OSCalendarTime_t* outCalendarTime)
 	{
 		if (!outCalendarTime)
 		{
@@ -325,41 +325,35 @@ namespace coreinit
 
 		uint64 totalMicroseconds = fsTime;
 
-		const uint64 MICROSECONDS_PER_MILLISECOND = 1000ULL;
-		const uint64 MICROSECONDS_PER_SECOND = 1000000ULL;
+		const uint64 MICROSECONDS_PER_MILLISECOND = 1000LL;
+		const uint64 MICROSECONDS_PER_SECOND = 1000000LL;
 		const sint64 SECONDS_PER_DAY = 86400LL;
-		// The FS epoch begins on 1980-01-01
-		// This is the number of days from 0000-01-01 to 1980-01-01
+		// FS epoch begins on 1980-01-01
 		const sint64 FS_DAY_EPOCH_OFFSET = 723180LL;
 
-		uint64 remainderMicrosecondsInSecond = totalMicroseconds % MICROSECONDS_PER_SECOND;
+		sint64 microInSec = fsTime % MICROSECONDS_PER_SECOND;
+
+		if (microInSec < 0)
+	    {
+	        microInSec += MICROSECONDS_PER_SECOND;
+	    }
 
 		outCalendarTime->millisecond = static_cast<sint32>(remainderMicrosecondsInSecond / MICROSECONDS_PER_MILLISECOND);
 		outCalendarTime->microsecond = static_cast<sint32>(remainderMicrosecondsInSecond % MICROSECONDS_PER_MILLISECOND);
 
-		sint64 totalSecondsSinceFsEpoch = static_cast<sint64>(totalMicroseconds / MICROSECONDS_PER_SECOND);
+		sint64 totalSecondsSinceEpoch = (fsTime - microInSec) / MICROSECONDS_PER_SECOND;
 
-		sint64 totalDaysRawSinceFsEpoch;
-		sint64 secondsInDay;
+	    sint64 daysSinceEpoch = totalSecondsSinceEpoch / SECONDS_PER_DAY;
+	    sint64 secondsInDay = totalSecondsSinceEpoch % SECONDS_PER_DAY;
 
-		if (totalSecondsSinceFsEpoch >= 0)
-		{
-			totalDaysRawSinceFsEpoch = totalSecondsSinceFsEpoch / SECONDS_PER_DAY;
-			secondsInDay = totalSecondsSinceFsEpoch % SECONDS_PER_DAY;
-		}
-		else
-		{
-			totalDaysRawSinceFsEpoch = totalSecondsSinceFsEpoch / SECONDS_PER_DAY;
-			secondsInDay = totalSecondsSinceFsEpoch % SECONDS_PER_DAY;
-			if (secondsInDay < 0)
-			{
-				secondsInDay += SECONDS_PER_DAY;
-				totalDaysRawSinceFsEpoch--;
-			}
-		}
+	    if (secondsInDay < 0)
+	    {
+	        secondsInDay += SECONDS_PER_DAY;
+	        daysSinceEpoch--;
+	    }
 
-		sint64 absoluteDayNumber = totalDaysRawSinceFsEpoch + FS_DAY_EPOCH_OFFSET;
-
+		sint64 absoluteDayNumber = daysSinceEpoch + FS_DAY_EPOCH_OFFSET;
+		
 		dayNumberToCalendarDate(absoluteDayNumber, outCalendarTime);
 
 		outCalendarTime->second = static_cast<sint32>(secondsInDay % 60);
