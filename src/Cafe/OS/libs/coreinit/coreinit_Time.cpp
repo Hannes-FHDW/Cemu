@@ -338,8 +338,8 @@ namespace coreinit
 	        microInSec += MICROSECONDS_PER_SECOND;
 	    }
 
-		outCalendarTime->millisecond = static_cast<sint32>(remainderMicrosecondsInSecond / MICROSECONDS_PER_MILLISECOND);
-		outCalendarTime->microsecond = static_cast<sint32>(remainderMicrosecondsInSecond % MICROSECONDS_PER_MILLISECOND);
+		outCalendarTime->millisecond = static_cast<sint32>(microInSec / MICROSECONDS_PER_MILLISECOND);
+		outCalendarTime->microsecond = static_cast<sint32>(microInSec % MICROSECONDS_PER_MILLISECOND);
 
 		sint64 totalSecondsSinceEpoch = (fsTime - microInSec) / MICROSECONDS_PER_SECOND;
 
